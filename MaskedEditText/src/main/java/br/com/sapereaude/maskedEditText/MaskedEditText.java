@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.v4.text.TextUtilsCompat;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
@@ -124,7 +123,7 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 		generatePositionArrays();
 
 		rawText = new RawText();
-		selection = rawToMask[0];
+		selection = getMaskFirstChunkEnd();
 
 		editingBefore = true;
 		editingOnChanged = true;
@@ -340,9 +339,11 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 
 				setSelection(selStart, selEnd);
 				selectionChanged = true;
-			} else{
+			} else {
+                int maskFirstChunkEnd = getMaskFirstChunkEnd();
+				boolean isSelectionBeforeFirstPos = (selEnd == selStart) && selStart < maskFirstChunkEnd;
 			    //check to see if the current selection is outside the already entered text
-				if(selStart > rawText.length() - 1){
+				if(selStart > rawText.length() - 1 || isSelectionBeforeFirstPos){
 					final int start = fixSelection(selStart);
 					final int end = fixSelection(selEnd);
 					if (start >= 0 && end < getText().length()){
@@ -353,6 +354,10 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
 		}
 		super.onSelectionChanged(selStart, selEnd);
 	}
+
+	private int getMaskFirstChunkEnd() {
+	    return rawToMask[0];
+    }
 
 	private int fixSelection(int selection) {
 		if(selection > lastValidPosition()) {
@@ -410,7 +415,7 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
     private CharSequence makeMaskedTextWithHint() {
         SpannableStringBuilder ssb = new SpannableStringBuilder();
         int mtrv;
-        int maskFirstChunkEnd = rawToMask[0];
+        int maskFirstChunkEnd = getMaskFirstChunkEnd();
         for(int i = 0; i < mask.length(); i++) {
             mtrv = maskToRaw[i];
             if (mtrv != -1) {
