@@ -301,7 +301,8 @@ public class MaskedEditText extends AppCompatEditText implements TextWatcher {
             }
 
 			selectionChanged = false;
-			setSelection(selection);
+            if(selection < lastValidMaskPosition)
+			    setSelection(selection);
 
 			editingBefore = false;
 			editingOnChanged = false;
